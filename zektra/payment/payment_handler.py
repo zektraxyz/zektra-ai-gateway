@@ -5,6 +5,7 @@ from web3 import Web3
 from eth_account import Account
 from zektra.models import PaymentResult
 from zektra.payment.wallet import WalletManager
+from zektra.payment.solana_payment import SolanaPaymentHandler
 from zektra.config import ZektraConfig
 
 
@@ -33,13 +34,22 @@ class PaymentHandler:
         self.config = config or ZektraConfig()
         self.wallet_manager = wallet_manager
 
-        if not self.wallet_manager:
-            if self.config.wallet_address:
-                self.wallet_manager = WalletManager(config=self.config)
-            else:
-                raise ValueError("Wallet manager or wallet address required")
-
-        self.web3 = self.wallet_manager.web3
+        # Initialize based on payment network
+        if self.config.payment_network.lower() == "solana":
+            self.solana_handler = SolanaPaymentHandler(
+                rpc_url=self.config.solana_rpc_url,
+                private_key=self.config.solana_private_key
+            )
+            self.web3 = None
+        else:
+            # Ethereum
+            if not self.wallet_manager:
+                if self.config.wallet_address:
+                    self.wallet_manager = WalletManager(config=self.config)
+                else:
+                    raise ValueError("Wallet manager or wallet address required")
+            self.web3 = self.wallet_manager.web3
+            self.solana_handler = None
 
     def pay(
         self,
@@ -53,24 +63,44 @@ class PaymentHandler:
 
         Args:
             amount: Amount to pay
-            token: Token symbol (ZEKTRA, USDC, ETH)
+            token: Token symbol (ZEKTRA, USDC, ETH, SOL)
             recipient: Recipient address (default: payment contract)
-            token_address: ERC20 token contract address
+            token_address: Token contract/mint address
 
         Returns:
             PaymentResult with transaction details
         """
         try:
-            if token.upper() == "ETH":
-                return self._pay_eth(amount, recipient)
+            # Solana payments (async)
+            if self.config.payment_network.lower() == "solana":
+                import asyncio
+                if token.upper() == "SOL":
+                    return asyncio.run(self.solana_handler.pay_sol(amount, recipient or ""))
+                else:
+                    # SPL token (ZEKTRA from Pump.fun)
+                    token_mint = token_address or self.config.zektra_token_mint
+                    if not token_mint:
+                        raise ValueError(f"Token mint address required for {token}")
+                    return asyncio.run(
+                        self.solana_handler.pay_spl_token(
+                            amount=amount,
+                            token_mint=token_mint,
+                            recipient=recipient or ""
+                        )
+                    )
+            
+            # Ethereum payments
             else:
-                # ERC20 token payment
-                if not token_address:
-                    token_address = self.config.zektra_token_address
+                if token.upper() == "ETH":
+                    return self._pay_eth(amount, recipient)
+                else:
+                    # ERC20 token payment
                     if not token_address:
-                        raise ValueError(f"Token address required for {token}")
+                        token_address = self.config.zektra_token_address
+                        if not token_address:
+                            raise ValueError(f"Token address required for {token}")
 
-                return self._pay_token(amount, token_address, recipient)
+                    return self._pay_token(amount, token_address, recipient)
 
         except Exception as e:
             return PaymentResult(
@@ -178,8 +208,21 @@ class PaymentHandler:
     def verify_payment(self, transaction_hash: str) -> bool:
         """Verify a payment transaction"""
         try:
-            receipt = self.web3.eth.get_transaction_receipt(transaction_hash)
-            return receipt.status == 1
+            if self.config.payment_network.lower() == "solana":
+                # Verify Solana transaction (async)
+                if self.solana_handler:
+                    import asyncio
+                    from solders.signature import Signature
+                    sig = Signature.from_string(transaction_hash)
+                    status = asyncio.run(
+                        self.solana_handler.client.get_signature_status(sig)
+                    )
+                    return status.value is not None and status.value[0] is not None
+                return False
+            else:
+                # Verify Ethereum transaction
+                receipt = self.web3.eth.get_transaction_receipt(transaction_hash)
+                return receipt.status == 1
         except Exception:
             return False
 

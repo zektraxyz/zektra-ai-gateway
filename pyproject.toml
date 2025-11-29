@@ -34,6 +34,10 @@ dependencies = [
     "pydantic>=2.5.0",
     "pydantic-settings>=2.1.0",
     "typing-extensions>=4.8.0",
+    "solana>=0.30.0",
+    "solders>=0.18.0",
+    "spl-token>=0.1.0",
+    "base58>=2.1.0",
 ]
 
 [project.optional-dependencies]

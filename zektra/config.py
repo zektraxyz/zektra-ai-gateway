@@ -27,7 +27,21 @@ class ZektraConfig(BaseSettings):
         default=None,
         env="ZEKTRA_TOKEN_ADDRESS"
     )
-    payment_network: str = Field(default="ethereum", env="PAYMENT_NETWORK")
+    payment_network: str = Field(default="solana", env="PAYMENT_NETWORK")  # solana or ethereum
+    
+    # Solana Configuration
+    solana_rpc_url: str = Field(
+        default="https://api.mainnet-beta.solana.com",
+        env="SOLANA_RPC_URL"
+    )
+    solana_private_key: Optional[str] = Field(
+        default=None,
+        env="SOLANA_PRIVATE_KEY"
+    )
+    zektra_token_mint: Optional[str] = Field(
+        default=None,
+        env="ZEKTRA_TOKEN_MINT"  # Solana SPL token mint address
+    )
     
     # Default payment amount (in ZEKTRA tokens)
     default_payment_amount: float = Field(default=0.1, env="DEFAULT_PAYMENT_AMOUNT")
