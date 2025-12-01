@@ -4,50 +4,35 @@ from typing import Optional, Dict, Any
 from zektra.config import ZektraConfig
 from zektra.models import AIResponse, PaymentResult, QueryRequest, ServiceInfo
 from zektra.services import DeepSeekService, OpenAIService, AnthropicService
-from zektra.payment import PaymentHandler, WalletManager
+from zektra.payment import PaymentHandler
 
 
 class ZektraGateway:
     """
-    Main gateway for connecting AI services with crypto payments
+    Main gateway for connecting AI services with Solana crypto payments
     """
 
     def __init__(
         self,
-        wallet_address: Optional[str] = None,
-        private_key: Optional[str] = None,
-        wallet: Optional[WalletManager] = None,
+        solana_private_key: Optional[str] = None,
         config: Optional[ZektraConfig] = None
     ):
         """
         Initialize Zektra Gateway
 
         Args:
-            wallet_address: Ethereum wallet address
-            private_key: Private key for signing transactions
-            wallet: Pre-configured WalletManager instance
+            solana_private_key: Solana private key (base58 encoded)
             config: ZektraConfig instance
         """
         self.config = config or ZektraConfig()
+        
+        # Override private key if provided
+        if solana_private_key:
+            self.config.solana_private_key = solana_private_key
 
-        # Initialize wallet manager
-        if wallet:
-            self.wallet_manager = wallet
-        elif wallet_address or self.config.wallet_address:
-            self.wallet_manager = WalletManager(
-                wallet_address=wallet_address,
-                private_key=private_key,
-                config=self.config
-            )
-        else:
-            self.wallet_manager = None
-
-        # Initialize payment handler
-        if self.wallet_manager:
-            self.payment_handler = PaymentHandler(
-                wallet_manager=self.wallet_manager,
-                config=self.config
-            )
+        # Initialize payment handler (Solana only)
+        if self.config.solana_private_key:
+            self.payment_handler = PaymentHandler(config=self.config)
         else:
             self.payment_handler = None
 
@@ -93,7 +78,7 @@ class ZektraGateway:
             model: Specific model to use
             temperature: Sampling temperature
             max_tokens: Maximum tokens to generate
-            payment_token: Token for payment (ZEKTRA, USDC, ETH)
+            payment_token: Token for payment (ZEKTRA, SOL, or other SPL token)
             payment_amount: Payment amount (defaults to config)
             require_payment: Whether payment is required
             **kwargs: Additional service-specific parameters
@@ -114,9 +99,16 @@ class ZektraGateway:
         if require_payment and self.payment_handler:
             amount = payment_amount or self.config.default_payment_amount
 
+            # Get recipient address (should be configured)
+            recipient = self.config.solana_wallet_address
+            if not recipient:
+                raise ValueError("Recipient wallet address required for payment")
+
             payment_result = self.payment_handler.pay(
                 amount=amount,
-                token=payment_token
+                token=payment_token,
+                recipient=recipient,
+                token_mint=self.config.token_mint if payment_token.upper() != "SOL" else None
             )
 
             if not payment_result.success:
@@ -179,13 +171,31 @@ class ZektraGateway:
         }
 
     def get_wallet_balance(self, token: Optional[str] = None) -> float:
-        """Get wallet balance"""
-        if not self.wallet_manager:
-            raise ValueError("Wallet not configured")
+        """Get Solana wallet balance (SOL or SPL token)"""
+        if not self.payment_handler:
+            raise ValueError("Payment handler not configured. Set SOLANA_PRIVATE_KEY in config.")
 
-        token_address = None
-        if token and token.upper() != "ETH":
-            token_address = self.config.zektra_token_address
+        import asyncio
+        wallet_address = self.config.solana_wallet_address
+        if not wallet_address:
+            # Derive wallet address from private key if available
+            if self.config.solana_private_key:
+                from solders.keypair import Keypair
+                import base58
+                key_bytes = base58.b58decode(self.config.solana_private_key)
+                keypair = Keypair.from_bytes(key_bytes)
+                wallet_address = str(keypair.pubkey())
+            else:
+                raise ValueError("Wallet address or private key required")
 
-        return self.wallet_manager.get_balance(token_address=token_address)
+        token_mint = None
+        if token and token.upper() != "SOL":
+            token_mint = self.config.token_mint
+
+        return asyncio.run(
+            self.payment_handler.solana_handler.get_balance(
+                wallet_address=wallet_address,
+                token_mint=token_mint
+            )
+        )
 

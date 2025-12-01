@@ -7,28 +7,13 @@ from pydantic import Field
 
 
 class ZektraConfig(BaseSettings):
-    """Configuration for Zektra AI Gateway"""
+    """Configuration for Zektra AI Gateway (Solana only)"""
 
     # AI Service API Keys
     deepseek_api_key: Optional[str] = Field(default=None, env="DEEPSEEK_API_KEY")
     openai_api_key: Optional[str] = Field(default=None, env="OPENAI_API_KEY")
     anthropic_api_key: Optional[str] = Field(default=None, env="ANTHROPIC_API_KEY")
 
-    # Wallet Configuration
-    wallet_address: Optional[str] = Field(default=None, env="ZEKTRA_WALLET_ADDRESS")
-    private_key: Optional[str] = Field(default=None, env="ZEKTRA_PRIVATE_KEY")
-    rpc_url: str = Field(
-        default="https://eth.llamarpc.com",
-        env="ZEKTRA_RPC_URL"
-    )
-
-    # Payment Configuration
-    zektra_token_address: Optional[str] = Field(
-        default=None,
-        env="ZEKTRA_TOKEN_ADDRESS"
-    )
-    payment_network: str = Field(default="solana", env="PAYMENT_NETWORK")  # solana or ethereum
-    
     # Solana Configuration
     solana_rpc_url: str = Field(
         default="https://api.mainnet-beta.solana.com",
@@ -38,12 +23,18 @@ class ZektraConfig(BaseSettings):
         default=None,
         env="SOLANA_PRIVATE_KEY"
     )
-    zektra_token_mint: Optional[str] = Field(
+    solana_wallet_address: Optional[str] = Field(
         default=None,
-        env="ZEKTRA_TOKEN_MINT"  # Solana SPL token mint address
+        env="SOLANA_WALLET_ADDRESS"
     )
     
-    # Default payment amount (in ZEKTRA tokens)
+    # Token Configuration
+    token_mint: Optional[str] = Field(
+        default="7p3jMiwW5sapCq7eXysuhGAXdDhr6sERytjUzH5fpump",
+        env="TOKEN_MINT"  # Solana SPL token mint address (ZEKTRA from Pump.fun)
+    )
+    
+    # Default payment amount (in tokens)
     default_payment_amount: float = Field(default=0.1, env="DEFAULT_PAYMENT_AMOUNT")
 
     # API Endpoints

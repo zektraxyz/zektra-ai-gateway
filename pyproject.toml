@@ -5,14 +5,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "zektra-ai-gateway"
 version = "0.1.0"
-description = "AI Gateway with Crypto Payments - Connect to AI services using $ZEKTRA tokens"
+description = "AI Gateway with Solana Payments - Connect to AI services using $ZEKTRA tokens on Solana"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
     {name = "Zektra Team", email = "dev@zektra.ai"}
 ]
-keywords = ["ai", "crypto", "blockchain", "deepseek", "openai", "web3"]
+keywords = ["ai", "crypto", "blockchain", "deepseek", "openai", "solana", "spl-token"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -28,8 +28,6 @@ classifiers = [
 
 dependencies = [
     "requests>=2.31.0",
-    "web3>=6.11.0",
-    "eth-account>=0.9.0",
     "python-dotenv>=1.0.0",
     "pydantic>=2.5.0",
     "pydantic-settings>=2.1.0",

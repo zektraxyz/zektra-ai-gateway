@@ -1,9 +1,9 @@
-"""Basic example: Query DeepSeek with crypto payment"""
+"""Basic example: Query DeepSeek with Solana payment"""
 
 from zektra import ZektraGateway
 
 # Initialize gateway
-# Make sure to set DEEPSEEK_API_KEY, ZEKTRA_WALLET_ADDRESS, etc. in .env
+# Make sure to set DEEPSEEK_API_KEY, SOLANA_PRIVATE_KEY, SOLANA_WALLET_ADDRESS in .env
 gateway = ZektraGateway()
 
 # Query DeepSeek with ZEKTRA payment

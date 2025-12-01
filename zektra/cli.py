@@ -78,7 +78,7 @@ def main():
         elif args.command == "wallet":
             if args.wallet_command == "balance":
                 balance = gateway.get_wallet_balance(token=args.token)
-                token_name = args.token or "ETH"
+                token_name = args.token or "SOL"
                 print(f"\nBalance: {balance} {token_name}")
 
     except Exception as e:
