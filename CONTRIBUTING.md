@@ -6,7 +6,7 @@ Thank you for your interest in contributing to Zektra AI Gateway! This document 
 
 1. Fork and clone the repository:
 ```bash
-git clone https://github.com/zektra/zektra-ai-gateway.git
+git clone https://github.com/zektraxyz/zektra-ai-gateway.git
 cd zektra-ai-gateway
 ```
 
