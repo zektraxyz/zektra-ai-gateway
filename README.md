@@ -22,7 +22,7 @@ pip install zektra-ai-gateway
 Or install from source:
 
 ```bash
-git clone https://github.com/zektra/zektra-ai-gateway.git
+git clone https://github.com/zektraxyz/zektra-ai-gateway.git
 cd zektra-ai-gateway
 pip install -e .
 ```

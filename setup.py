@@ -10,11 +10,10 @@ setup(
     name="zektra-ai-gateway",
     version="0.1.0",
     author="Zektra Team",
-    author_email="dev@zektra.ai",
     description="AI Gateway with Crypto Payments - Connect to AI services using $ZEKTRA tokens",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/zektra/zektra-ai-gateway",
+    url="https://github.com/zektraxyz/zektra-ai-gateway",
     packages=find_packages(exclude=["tests", "examples"]),
     classifiers=[
         "Development Status :: 4 - Beta",

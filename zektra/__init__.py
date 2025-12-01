@@ -5,7 +5,6 @@ Version: 0.1.0-beta
 
 __version__ = "0.1.0"
 __author__ = "Zektra Team"
-__email__ = "dev@zektra.ai"
 
 from zektra.gateway import ZektraGateway
 from zektra.config import ZektraConfig

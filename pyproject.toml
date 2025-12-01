@@ -9,9 +9,7 @@ description = "AI Gateway with Solana Payments - Connect to AI services using $Z
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
-authors = [
-    {name = "Zektra Team", email = "dev@zektra.ai"}
-]
+
 keywords = ["ai", "crypto", "blockchain", "deepseek", "openai", "solana", "spl-token"]
 classifiers = [
     "Development Status :: 4 - Beta",
