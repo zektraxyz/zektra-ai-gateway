@@ -3,13 +3,13 @@
 **Version:** 0.1.0-beta  
 **Status:** Beta - Production Ready
 
-A Python gateway that connects AI services (DeepSeek, OpenAI, etc.) with crypto payments using $ZEKTRA tokens.
+A Python gateway that connects AI services (DeepSeek, OpenAI, etc.) with Solana crypto payments using $ZEKTRA tokens from [Pump.fun](https://pump.fun/coin/7p3jMiwW5sapCq7eXysuhGAXdDhr6sERytjUzH5fpump).
 
 ## Features
 
 - 🔌 **AI Service Integration**: Connect to DeepSeek, OpenAI, Anthropic, and more
-- 💰 **Crypto Payments**: Pay for AI queries using $ZEKTRA tokens
-- 🔐 **Wallet Integration**: Support for Web3 wallets (MetaMask, WalletConnect)
+- 💰 **Solana Payments**: Pay for AI queries using $ZEKTRA tokens or SOL
+- 🔐 **Solana Wallet Support**: Native Solana wallet integration
 - 📊 **Usage Tracking**: Monitor API usage and costs
 - 🚀 **Production Ready**: Built for reliability and scale
 
@@ -34,13 +34,10 @@ pip install -e .
 ```python
 from zektra import ZektraGateway
 
-# Initialize gateway
-gateway = ZektraGateway(
-    wallet_address="0x...",
-    private_key="0x..."  # Or use wallet connection
-)
+# Initialize gateway (uses SOLANA_PRIVATE_KEY from .env or config)
+gateway = ZektraGateway()
 
-# Query DeepSeek with crypto payment
+# Query DeepSeek with ZEKTRA token payment
 response = gateway.query_deepseek(
     prompt="Explain zero-knowledge proofs",
     payment_token="ZEKTRA",
@@ -50,16 +47,19 @@ response = gateway.query_deepseek(
 print(response.text)
 ```
 
-### With Wallet Connection
+### With Custom Configuration
 
 ```python
-from zektra import ZektraGateway
-from zektra.wallet import connect_wallet
+from zektra import ZektraGateway, ZektraConfig
 
-# Connect wallet (MetaMask, WalletConnect, etc.)
-wallet = connect_wallet()
+# Create custom config
+config = ZektraConfig(
+    solana_private_key="your-base58-private-key",
+    solana_wallet_address="recipient-wallet-address",
+    token_mint="7p3jMiwW5sapCq7eXysuhGAXdDhr6sERytjUzH5fpump"  # ZEKTRA token
+)
 
-gateway = ZektraGateway(wallet=wallet)
+gateway = ZektraGateway(config=config)
 
 # Query AI service
 response = gateway.query(
@@ -72,10 +72,11 @@ response = gateway.query(
 ### CLI Usage
 
 ```bash
-# Set your API keys and wallet
+# Set your API keys and Solana wallet
 export DEEPSEEK_API_KEY="your-key"
-export ZEKTRA_WALLET_ADDRESS="0x..."
-export ZEKTRA_PRIVATE_KEY="0x..."
+export SOLANA_PRIVATE_KEY="your-base58-private-key"
+export SOLANA_WALLET_ADDRESS="recipient-address"
+export TOKEN_MINT="7p3jMiwW5sapCq7eXysuhGAXdDhr6sERytjUzH5fpump"
 
 # Query DeepSeek
 zektra query deepseek "Explain ZK proofs" --payment ZEKTRA --amount 0.1
@@ -96,9 +97,9 @@ zektra wallet balance
 
 ## Payment Methods
 
-- **$ZEKTRA Token** (Primary)
-- **USDC** (Stablecoin)
-- **ETH** (Ethereum)
+- **$ZEKTRA Token** (Primary) - Solana SPL token from [Pump.fun](https://pump.fun/coin/7p3jMiwW5sapCq7eXysuhGAXdDhr6sERytjUzH5fpump)
+- **SOL** (Solana native)
+- **Other SPL Tokens** - Any Solana SPL token by providing mint address
 
 ## Configuration
 
@@ -110,14 +111,14 @@ DEEPSEEK_API_KEY=your-deepseek-key
 OPENAI_API_KEY=your-openai-key
 ANTHROPIC_API_KEY=your-anthropic-key
 
-# Wallet Configuration
-ZEKTRA_WALLET_ADDRESS=0x...
-ZEKTRA_PRIVATE_KEY=0x...
-ZEKTRA_RPC_URL=https://...
+# Solana Configuration
+SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
+SOLANA_PRIVATE_KEY=your-base58-private-key
+SOLANA_WALLET_ADDRESS=recipient-wallet-address  # Where payments are sent
 
-# Payment Configuration
-ZEKTRA_TOKEN_ADDRESS=0x...
-PAYMENT_NETWORK=ethereum  # ethereum, solana, etc.
+# Token Configuration
+TOKEN_MINT=7p3jMiwW5sapCq7eXysuhGAXdDhr6sERytjUzH5fpump  # ZEKTRA token from Pump.fun
+DEFAULT_PAYMENT_AMOUNT=0.1
 ```
 
 ## Examples
@@ -148,9 +149,9 @@ black .
 ## Roadmap
 
 - [x] DeepSeek integration
-- [x] Crypto payment layer
-- [x] Wallet integration
-- [ ] Multi-chain support (Solana, etc.)
+- [x] Solana payment layer
+- [x] Solana wallet integration
+- [x] SPL token support
 - [ ] Subscription model
 - [ ] Usage analytics dashboard
 - [ ] Rate limiting and quotas
@@ -161,7 +162,4 @@ MIT License
 
 ## Support
 
-- GitHub Issues: https://github.com/zektra/zektra-ai-gateway/issues
-- Documentation: https://docs.zektra.ai
-- Discord: https://discord.gg/zektra
-
+- GitHub Issues: https://github.com/zektraxyz/zektra-ai-gateway/issues
